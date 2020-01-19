@@ -6,7 +6,7 @@ type Opinion struct {
 	PollId          uint64
 	ParentId        uint64
 	Position        string
-	CreateHour      string
+	CreatePeriod    string
 	UserId          uint64
 	CreateEs        int64
 	UpdateEs        int64
@@ -19,7 +19,7 @@ type OpinionUpdate struct {
 	OpinionId       uint64
 	RootOpinionId   uint64
 	PollId          uint64
-	UpdateHour      string
+	UpdatePeriod    string
 	UserId          uint64
 	UpdateEs        int64
 	Data            []byte
@@ -28,14 +28,21 @@ type OpinionUpdate struct {
 }
 
 type Poll struct {
-	PollId     uint64
-	ThemeId    uint64
-	LocationId uint32
-	UserId     uint64
-	CreateHour string
-	CreateEs   int64
-	Data       []byte
-	BatchId    int
+	PollId       uint64
+	ThemeId      uint64
+	LocationId   uint32
+	UserId       uint64
+	CreatePeriod string
+	CreateEs     int64
+	Data         []byte
+	BatchId      int
+}
+
+type PollKey struct {
+	PollId   uint64
+	UserId   uint64
+	CreateEs int64
+	BatchId  int
 }
 
 type Thread struct {
