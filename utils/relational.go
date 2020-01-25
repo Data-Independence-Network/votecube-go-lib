@@ -28,7 +28,7 @@ func SetupDb(
 func GetSeq(
 	sequence sequence.Sequence,
 	ctx *fasthttp.RequestCtx,
-) (uint64, bool) {
+) (int64, bool) {
 	idCursor, err := sequence.GetCursor(1)
 	if err != nil {
 		log.Printf("AddOpinion: Unable to access %s sequence", sequence.Name)

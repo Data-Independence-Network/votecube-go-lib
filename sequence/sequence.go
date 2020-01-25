@@ -16,19 +16,19 @@ type Sequence struct {
 }
 
 type SequenceBlock struct {
-	End    uint64
-	Start  uint64
-	Length uint64
+	End    int64
+	Start  int64
+	Length int64
 }
 
 type SequenceCursor struct {
 	currentBlockIndex int
 	currentBlock      *SequenceBlock
 	blocks            []SequenceBlock
-	currentId         uint64
+	currentId         int64
 }
 
-func (cur *SequenceCursor) Next() uint64 {
+func (cur *SequenceCursor) Next() int64 {
 	if cur.currentId == cur.currentBlock.End {
 		cur.currentBlockIndex += 1
 		if cur.currentBlockIndex == len(cur.blocks) {

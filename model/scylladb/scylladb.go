@@ -1,53 +1,49 @@
 package scylladb
 
 type Opinion struct {
-	OpinionId       uint64
-	RootOpinionId   uint64
-	PollId          uint64
-	ParentId        uint64
-	Position        string
-	CreatePeriod    string
-	UserId          uint64
+	PollId          int64
+	PartitionPeriod int32
+	AgeSuitability  int64
+	OpinionId       int64
+	ThemeId         int64
+	LocationId      int32
+	IngestBatchId   int32
+	Version         int32
+	RootOpinionId   int64
+	ParentOpinionId int64
 	CreateEs        int64
-	UpdateEs        int64
-	Version         uint16
+	UserId          int64
 	Data            []byte
 	InsertProcessed bool
 }
 
 type OpinionUpdate struct {
-	OpinionId       uint64
-	RootOpinionId   uint64
-	PollId          uint64
-	UpdatePeriod    string
-	UserId          uint64
-	UpdateEs        int64
-	Data            []byte
-	Version         uint16
+	PollId          int64
+	PartitionPeriod int32
+	IngestBatchId   int32
+	OpinionId       int64
+	Version         int32
 	UpdateProcessed bool
 }
 
 type Poll struct {
-	PollId       uint64
-	ThemeId      uint64
-	LocationId   uint32
-	UserId       uint64
-	CreatePeriod string
-	CreateEs     int64
-	Data         []byte
-	BatchId      int
+	PollId          int64
+	ThemeId         int64
+	LocationId      int32
+	IngestBatchId   int32
+	UserId          int64
+	CreateEs        int64
+	PartitionPeriod int32
+	AgeSuitability  int64
+	Data            []byte
+	InsertProcessed bool
 }
 
-type PollKey struct {
-	PollId   uint64
-	UserId   uint64
-	CreateEs int64
-	BatchId  int
-}
-
-type Thread struct {
-	PollId   uint64
-	UserId   uint64
-	CreateEs int64
-	Data     []byte
+type UserSession struct {
+	PartitionPeriod int32
+	SessionId       string
+	LastActionEs    int64
+	KeepSignedIn    int8
+	UserId          int64
+	Data            []byte
 }
