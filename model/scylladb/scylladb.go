@@ -8,7 +8,7 @@ type Opinion struct {
 	ThemeId         int64
 	LocationId      int32
 	IngestBatchId   int32
-	Version         int32
+	Version         int16
 	RootOpinionId   int64
 	ParentOpinionId int64
 	CreateEs        int64
@@ -22,7 +22,7 @@ type OpinionUpdate struct {
 	PartitionPeriod int32
 	IngestBatchId   int32
 	OpinionId       int64
-	Version         int32
+	Version         int16
 	UpdateProcessed bool
 }
 
@@ -31,8 +31,8 @@ type Poll struct {
 	ThemeId         int64
 	LocationId      int32
 	IngestBatchId   int32
-	UserId          int64
 	CreateEs        int64
+	UserId          int64
 	PartitionPeriod int32
 	AgeSuitability  int64
 	Data            []byte

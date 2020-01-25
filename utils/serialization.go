@@ -3,7 +3,6 @@ package utils
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"github.com/valyala/fasthttp"
 	"log"
 	"net/http"
@@ -26,12 +25,11 @@ func ReturnId(
 	ctx.Response.AppendBody(idSignificantBytes)
 }
 
-func ReturnIdAndCreateEs(
-	id int64,
-	createEs int64,
+func ReturnShortVersion(
+	id int16,
 	ctx *fasthttp.RequestCtx,
 ) {
-	byteMask, idSignificantBytes, createEsSignificantBytes, ok := encodeIdAndCreateEs(id, createEs, ctx)
+	versionBytes, ok := encodeInt16(id, ctx)
 	if !ok {
 		return
 	}
@@ -40,31 +38,7 @@ func ReturnIdAndCreateEs(
 	ctx.Response.Reset()
 	ctx.SetStatusCode(http.StatusCreated)
 	ctx.SetContentType("vcb")
-	ctx.Response.AppendBody([]byte{byteMask})
-	ctx.Response.AppendBody(idSignificantBytes)
-	ctx.Response.AppendBody(createEsSignificantBytes)
-}
-
-func ReturnIdAndCreateEsAndVersion(
-	id int64,
-	createEs int64,
-	version int16,
-	ctx *fasthttp.RequestCtx,
-) {
-	byteMask, idSignificantBytes, createEsSignificantBytes, versionSignificantBytes,
-		ok := encodeIdAndCreateEsAndVersion(id, createEs, version, ctx)
-	if !ok {
-		return
-	}
-
-	// https://github.com/valyala/fasthttp/issues/444
-	ctx.Response.Reset()
-	ctx.SetStatusCode(http.StatusCreated)
-	ctx.SetContentType("vcb")
-	ctx.Response.AppendBody([]byte{byteMask})
-	ctx.Response.AppendBody(idSignificantBytes)
-	ctx.Response.AppendBody(createEsSignificantBytes)
-	ctx.Response.AppendBody(versionSignificantBytes)
+	ctx.Response.AppendBody(versionBytes)
 }
 
 func ReturnPartitionPeriodAndIdAndVersion(
@@ -89,47 +63,6 @@ func ReturnPartitionPeriodAndIdAndVersion(
 	ctx.Response.AppendBody(versionSignificantBytes)
 }
 
-func encodeIdAndCreateEsAndVersion(
-	id int64,
-	createEs int64,
-	version int16,
-	ctx *fasthttp.RequestCtx,
-) (byte, []byte, []byte, []byte, bool) {
-	idByteMask, idSignificantBytes, ok := encodeInt64(id, ctx)
-	if !ok {
-		return 0, nil, nil, nil, false
-	}
-
-	esByteMask, createEsSignificantBytes, ok := encodeEpochSeconds(createEs, ctx)
-	if !ok {
-		return 0, nil, nil, nil, false
-	}
-	versionByteMask, versionSignificantBytes, ok := encodeUint16(version, ctx)
-	if !ok {
-		return 0, nil, nil, nil, false
-	}
-
-	finalByteMask := versionByteMask<<4 + esByteMask<<3 + idByteMask
-
-	fmt.Println("")
-	fmt.Println("id:       %d", id)
-	fmt.Println("createEs: %d", createEs)
-	fmt.Println("version: %d", version)
-	fmt.Printf("%d ", finalByteMask)
-	for _, n := range idSignificantBytes {
-		fmt.Printf("%d ", n)
-	}
-	for _, n := range createEsSignificantBytes {
-		fmt.Printf("%d ", n)
-	}
-	for _, n := range versionSignificantBytes {
-		fmt.Printf("%d ", n)
-	}
-	fmt.Println("")
-
-	return finalByteMask, idSignificantBytes, createEsSignificantBytes, versionSignificantBytes, true
-}
-
 func encodePartitionPeriodAndIdAndVersion(
 	partitionPeriod int32,
 	id int64,
@@ -138,55 +71,22 @@ func encodePartitionPeriodAndIdAndVersion(
 ) (byte, []byte, []byte, []byte, bool) {
 	partitionPeriodBytes, ok := getBytes(partitionPeriod, ctx)
 	if !ok {
-		return 0, nil, nil, false
+		return 0, nil, nil, nil, false
 	}
 
 	idByteMask, idSignificantBytes, ok := encodeInt64(id, ctx)
 	if !ok {
-		return 0, nil, nil, false
+		return 0, nil, nil, nil, false
 	}
 
-	versionByteMask, versionSignificantBytes, ok := encodeInt32(id, ctx)
+	versionByteMask, versionSignificantBytes, ok := encodeInt32(version, ctx)
 	if !ok {
-		return 0, nil, nil, false
+		return 0, nil, nil, nil, false
 	}
 
 	finalByteMask := idByteMask<<2 + versionByteMask
 
 	return finalByteMask, partitionPeriodBytes, idSignificantBytes, versionSignificantBytes, true
-}
-
-func encodeIdAndCreateEs(
-	id int64,
-	createEs int64,
-	ctx *fasthttp.RequestCtx,
-) (byte, []byte, []byte, bool) {
-	idByteMask, idSignificantBytes, ok := encodeInt64(id, ctx)
-	if !ok {
-		return 0, nil, nil, false
-	}
-
-	esByteMask, createEsSignificantBytes, ok := encodeEpochSeconds(createEs, ctx)
-	if !ok {
-		return 0, nil, nil, false
-	}
-
-	finalByteMask := esByteMask<<3 + idByteMask
-	/*
-		fmt.Println("")
-		fmt.Println("id:       %d", id)
-		fmt.Println("createEs: %d", createEs)
-		fmt.Printf("%d ", finalByteMask)
-		for _, n := range idSignificantBytes {
-			fmt.Printf("%d ", n)
-		}
-		for _, n := range createEsSignificantBytes {
-			fmt.Printf("%d ", n)
-		}
-		fmt.Println("")
-	*/
-
-	return finalByteMask, idSignificantBytes, createEsSignificantBytes, true
 }
 
 func encodeEpochSeconds(
@@ -284,27 +184,11 @@ func encodeInt32(
 	return byteMask, significantBytes, true
 }
 
-func encodeUint16(
-	number uint16,
+func encodeInt16(
+	number int16,
 	ctx *fasthttp.RequestCtx,
-) (byte, []byte, bool) {
-	bytes, ok := getBytes(number, ctx)
-	if !ok {
-		return 0, nil, false
-	}
-
-	var significantBytes []byte
-	var byteMask byte
-
-	if number < 256 {
-		significantBytes = bytes[0:1]
-		byteMask = 0
-	} else {
-		significantBytes = bytes[0:2]
-		byteMask = 1
-	}
-
-	return byteMask, significantBytes, true
+) ([]byte, bool) {
+	return getBytes(number, ctx)
 }
 
 func getBytes(

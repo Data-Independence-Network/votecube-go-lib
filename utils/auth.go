@@ -22,11 +22,12 @@ type UserContext struct {
 	sessionPartitionPeriod int32
 	sessionId              string
 	userSessionRows        []scylladb.UserSession
-	userId                 int64
+	UserId                 int64
 	waitGroup              sync.WaitGroup
+	parallel               bool
 }
 
-func NewUserContext(
+func NewParallelUserContext(
 	ctx *fasthttp.RequestCtx,
 	userId int64,
 	waitGroup sync.WaitGroup,
@@ -42,15 +43,52 @@ func NewUserContext(
 		ctx:                    ctx,
 		sessionPartitionPeriod: sessionPartitionPeriod,
 		sessionId:              sessionId,
-		userId:                 userId,
+		UserId:                 userId,
 		waitGroup:              waitGroup,
+		parallel:               true,
 	}
+}
+
+func NewUserContext(
+	ctx *fasthttp.RequestCtx,
+	userId int64,
+) *UserContext {
+	sessionPartitionPeriod, ok := ParseInt32Param(
+		"sessionPartitionPeriod", ctx)
+	if !ok {
+		return nil
+	}
+	sessionId := ctx.UserValue("sessionId").(string)
+
+	return &UserContext{
+		ctx:                    ctx,
+		sessionPartitionPeriod: sessionPartitionPeriod,
+		sessionId:              sessionId,
+		UserId:                 userId,
+	}
+}
+
+func IsValidSession(
+	ctx *fasthttp.RequestCtx,
+	userId int64,
+) bool {
+	userContext := NewUserContext(ctx, userId)
+	if userContext == nil {
+		return false
+	}
+	GetUserSession(*userContext)
+	if !CheckSession(*userContext) {
+		return false
+	}
+	return true
 }
 
 func GetUserSession(
 	userContext UserContext,
 ) {
-	defer userContext.waitGroup.Done()
+	if userContext.parallel {
+		defer userContext.waitGroup.Done()
+	}
 
 	selectUserSessionQuery := selectUserSession.BindMap(qb.M{
 		"partition_period": userContext.sessionPartitionPeriod,
@@ -69,15 +107,15 @@ func CheckSession(
 		return false
 	}
 	if len(userContext.userSessionRows) != 1 {
-		log.Printf("Did not find user_credentials with user_id: %d", userContext.userId)
+		log.Printf("Did not find user_credentials with user_id: %d", userContext.UserId)
 		userContext.ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
 	}
 
 	userSession := userContext.userSessionRows[0]
 
-	if userSession.UserId != userContext.userId {
-		log.Printf("Session user_id: %d does not match provided user_id: %d", userSession.UserId, userContext.userId)
+	if userSession.UserId != userContext.UserId {
+		log.Printf("Session user_id: %d does not match provided user_id: %d", userSession.UserId, userContext.UserId)
 		userContext.ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
 	}
