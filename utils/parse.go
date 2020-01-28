@@ -13,7 +13,7 @@ func ParseInt64Param(
 ) (int64, bool) {
 	number, parseError := strconv.ParseInt(ctx.UserValue(paramName).(string), 10, 64)
 	if parseError != nil {
-		log.Printf("Processing %s - Invalid %s: %s", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
+		log.Printf("Processing %s - Invalid %s: %s\n", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
 		log.Print(parseError)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 
@@ -27,16 +27,16 @@ func ParseInt32Param(
 	paramName string,
 	ctx *fasthttp.RequestCtx,
 ) (int32, bool) {
-	number, parseError := strconv.ParseInt(ctx.UserValue(paramName).(string), 10, 32)
+	number, parseError := strconv.ParseInt(ctx.UserValue(paramName).(string), 10, 31)
 	if parseError != nil {
-		log.Printf("Processing %s - Invalid %s: %s", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
+		log.Printf("Processing %s - Invalid %s: %s\n", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
 		log.Print(parseError)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 
 		return 0, false
 	}
 
-	return number, true
+	return int32(number), true
 }
 
 func ParseUint64Param(
@@ -45,7 +45,7 @@ func ParseUint64Param(
 ) (uint64, bool) {
 	number, parseError := strconv.ParseUint(ctx.UserValue(paramName).(string), 10, 64)
 	if parseError != nil {
-		log.Printf("Processing %s - Invalid %s: %s", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
+		log.Printf("Processing %s - Invalid %s: %s\n", ctx.UserValue("recordType"), paramName, ctx.UserValue(paramName))
 		log.Print(parseError)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 

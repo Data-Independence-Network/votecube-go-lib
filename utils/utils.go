@@ -7,6 +7,15 @@ import (
 func GetCurrentDateMinute() int32 {
 	return GetDateMinute(time.Now().UTC())
 }
+
+func GetCurrentPartitionPeriod(
+	partitionPeriodLength int,
+) int32 {
+	now := time.Now().UTC()
+
+	return GetDateMinute(now.Add(-(time.Minute * time.Duration(now.Minute()%partitionPeriodLength))))
+}
+
 func GetCurrentEs() int64 {
 	return time.Now().UTC().Unix()
 }
@@ -17,20 +26,21 @@ func GetDateMinuteFromEpochSeconds(
 	return GetDateMinute(time.Unix(epochSeconds, 0).UTC())
 }
 
-func GetPartitionPeriods(
-	partitionPeriod int,
-) (int32, int32) {
-	return GetOffsetPartitionPeriods(partitionPeriod, 0)
-}
-
-func GetOffsetPartitionPeriods(
-	partitionPeriod int,
-	minuteOffset int,
+func GetCurrentAndPreviousParitionPeriods(
+	partitionPeriodLength int,
 ) (int32, int32) {
 	now := time.Now().UTC()
-	currentPeriod := GetDateMinute(now.Add(-(time.Minute * time.Duration(minuteOffset))))
+	return getOffsetPartitionPeriodsFromTime(partitionPeriodLength, now.Minute()%partitionPeriodLength, now)
+}
+
+func getOffsetPartitionPeriodsFromTime(
+	partitionPeriod int,
+	minuteOffset int,
+	aTime time.Time,
+) (int32, int32) {
+	currentPeriod := GetDateMinute(aTime.Add(-(time.Minute * time.Duration(minuteOffset))))
 	numMinutes := partitionPeriod + minuteOffset
-	nextPeriod := GetDateMinute(now.Add(-(time.Minute * time.Duration(numMinutes))))
+	nextPeriod := GetDateMinute(aTime.Add(-(time.Minute * time.Duration(numMinutes))))
 
 	return currentPeriod, nextPeriod
 }

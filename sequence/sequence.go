@@ -7,10 +7,10 @@ import (
 )
 
 type Sequence struct {
-	CurrentValue uint64
+	CurrentValue int64
 	Db           *sql.DB
-	IncrementBy  uint64
-	Max          uint64
+	IncrementBy  int64
+	Max          int64
 	Name         string
 	nextBlock    *SequenceBlock
 }
@@ -50,11 +50,11 @@ func (e *SequenceError) Error() string {
 	return fmt.Sprintf("at %v", 0)
 }
 
-func (seq *Sequence) selectFromDb() (uint64, error) {
+func (seq *Sequence) selectFromDb() (int64, error) {
 	query := "select nextval('votecube." + seq.Name + "');"
 	//fmt.Println(query)
 	rows, err := seq.Db.Query(query)
-	var newMax uint64
+	var newMax int64
 	if err != nil {
 		return newMax, err
 	}
@@ -117,7 +117,7 @@ func (seq *Sequence) GetCursor(numVals int) (SequenceCursor, error) {
 
 func (seq *Sequence) getBlocks(numVals int) ([]SequenceBlock, error) {
 
-	numValues := uint64(numVals)
+	numValues := int64(numVals)
 	if seq.CurrentValue+numValues > seq.Max {
 		if seq.nextBlock == nil {
 			return nil, fmt.Errorf("Could not obtain sequences for %s in time", seq.Name)
@@ -130,7 +130,7 @@ func (seq *Sequence) getBlocks(numVals int) ([]SequenceBlock, error) {
 
 		var existingSeqBlock *SequenceBlock = nil
 
-		var acquiredRange uint64 = 0
+		var acquiredRange int64 = 0
 
 		if seq.Max > seq.CurrentValue {
 			acquiredRange = seq.Max - seq.CurrentValue

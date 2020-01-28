@@ -21,7 +21,7 @@ func Select(
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	if err := preparedSelect.Select(dest); err != nil {
-		log.Printf("Error during SELECT of %s", ctx.UserValue("recordType"))
+		log.Printf("Error during SELECT of %s\n", ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
@@ -36,7 +36,7 @@ func SelectCount(
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	if err := preparedSelect.Select(dest); err != nil {
-		log.Printf("Error during SELECT of %s", ctx.UserValue("recordType"))
+		log.Printf("Error during SELECT of %s\n", ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
@@ -53,6 +53,22 @@ func Update(
 	return exec("UPDATE", preparedInsert, v, ctx)
 }
 
+func ExecAux(
+	preparedModification *gocqlx.Queryx,
+	v interface{},
+	errorMessage string,
+) bool {
+	statement := preparedModification.BindStruct(v)
+
+	if err := statement.Exec(); err != nil {
+		log.Println(errorMessage)
+		log.Print(err)
+		return false
+	}
+
+	return true
+}
+
 func exec(
 	operationType string,
 	preparedInsert *gocqlx.Queryx,
@@ -62,7 +78,7 @@ func exec(
 	statement := preparedInsert.BindStruct(v)
 
 	if err := statement.Exec(); err != nil {
-		log.Printf("Error during %s of %s", operationType, ctx.UserValue("recordType"))
+		log.Printf("Error during %s of %s\n", operationType, ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false

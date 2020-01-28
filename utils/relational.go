@@ -31,7 +31,7 @@ func GetSeq(
 ) (int64, bool) {
 	idCursor, err := sequence.GetCursor(1)
 	if err != nil {
-		log.Printf("AddOpinion: Unable to access %s sequence", sequence.Name)
+		log.Printf("AddOpinion: Unable to access %s sequence\n", sequence.Name)
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 

@@ -34,6 +34,19 @@ func MarshalZip(
 	return Zip(dataBytes, ctx)
 }
 
+func MarshalZipAux(
+	v interface{},
+	marshalErrorMessage string,
+	zipErrorMessage string,
+) (bytes.Buffer, bool) {
+	dataBytes, ok := MarshalAux(v, marshalErrorMessage)
+	if !ok {
+		return bytes.Buffer{}, false
+	}
+
+	return ZipAux(dataBytes, zipErrorMessage)
+}
+
 func Zip(
 	dataBytes []byte,
 	ctx *fasthttp.RequestCtx,
@@ -50,6 +63,27 @@ func Zip(
 		log.Print("Unable to gzip %s", ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
+		return buf, false
+	}
+
+	return buf, true
+}
+
+func ZipAux(
+	dataBytes []byte,
+	errorMessage string,
+) (bytes.Buffer, bool) {
+	var buf bytes.Buffer
+	// https://blog.klauspost.com/gzip-performance-for-go-webservers/
+	gz := gzippers.Get().(*gzip.Writer)
+	gz.Reset(&buf)
+
+	defer gzippers.Put(gz)
+	defer gz.Close()
+
+	if _, err := gz.Write(dataBytes); err != nil {
+		log.Print(errorMessage)
+		log.Print(err)
 		return buf, false
 	}
 
@@ -80,22 +114,49 @@ func UnzipToZipper(
 	compressedData []byte,
 	gz *gzip.Writer,
 ) bool {
-	if compressedData != nil {
-		compressedDataReader := bytes.NewReader(compressedData)
-		gunz := gunzippers.Get().(*gzip.Reader)
-		gunz.Reset(compressedDataReader)
+	if compressedData == nil {
+		return true
+	}
 
-		defer gunzippers.Put(gunz)
-		defer gunz.Close()
+	compressedDataReader := bytes.NewReader(compressedData)
+	gunz := gunzippers.Get().(*gzip.Reader)
+	gunz.Reset(compressedDataReader)
 
-		if _, err := io.Copy(gz, gunz); err != nil {
-			log.Print(err)
+	defer gunzippers.Put(gunz)
+	defer gunz.Close()
 
-			return false
-		}
+	if _, err := io.Copy(gz, gunz); err != nil {
+		log.Print(err)
+
+		return false
 	}
 
 	return true
+}
+
+func Unzip(
+	compressedData []byte,
+	errorMessage string,
+) ([]byte, bool) {
+	if compressedData == nil {
+		return nil, true
+	}
+
+	compressedDataReader := bytes.NewReader(compressedData)
+	gunz := gunzippers.Get().(*gzip.Reader)
+	gunz.Reset(compressedDataReader)
+
+	defer gunzippers.Put(gunz)
+	defer gunz.Close()
+
+	var buf bytes.Buffer
+	if _, error := buf.ReadFrom(gunz); error != nil {
+		log.Println(errorMessage)
+		log.Print(error)
+		return nil, false
+	}
+
+	return buf.Bytes(), true
 }
 
 func CloseZipper(

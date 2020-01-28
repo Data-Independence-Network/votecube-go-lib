@@ -102,12 +102,12 @@ func CheckSession(
 	userContext UserContext,
 ) bool {
 	if !userContext.okUserSession {
-		log.Printf("Error in session lookup by partition_period: %d, session_id: %s", userContext.sessionPartitionPeriod, userContext.sessionId)
+		log.Printf("Error in session lookup by partition_period: %d, session_id: %s\n", userContext.sessionPartitionPeriod, userContext.sessionId)
 		userContext.ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
 	}
 	if len(userContext.userSessionRows) != 1 {
-		log.Printf("Did not find user_credentials with user_id: %d", userContext.UserId)
+		log.Printf("Did not find user_credentials with user_id: %d\n", userContext.UserId)
 		userContext.ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
 	}
@@ -115,7 +115,7 @@ func CheckSession(
 	userSession := userContext.userSessionRows[0]
 
 	if userSession.UserId != userContext.UserId {
-		log.Printf("Session user_id: %d does not match provided user_id: %d", userSession.UserId, userContext.UserId)
+		log.Printf("Session user_id: %d does not match provided user_id: %d\n", userSession.UserId, userContext.UserId)
 		userContext.ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
 	}
