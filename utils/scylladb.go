@@ -36,7 +36,7 @@ func SelectCount(
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	if err := preparedSelect.Select(dest); err != nil {
-		log.Printf("Error during SELECT of %s\n", ctx.UserValue("recordType"))
+		log.Printf("Error during SELECT COUNT of %s\n", ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false

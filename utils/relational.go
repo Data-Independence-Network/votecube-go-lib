@@ -26,7 +26,7 @@ func SetupDb(
 }
 
 func GetSeq(
-	sequence sequence.Sequence,
+	sequence *sequence.Sequence,
 	ctx *fasthttp.RequestCtx,
 ) (int64, bool) {
 	idCursor, err := sequence.GetCursor(1)

@@ -76,15 +76,16 @@ func IsValidSession(
 	if userContext == nil {
 		return false
 	}
-	GetUserSession(*userContext)
-	if !CheckSession(*userContext) {
+	GetUserSession(userContext)
+
+	if !CheckSession(userContext) {
 		return false
 	}
 	return true
 }
 
 func GetUserSession(
-	userContext UserContext,
+	userContext *UserContext,
 ) {
 	if userContext.parallel {
 		defer userContext.waitGroup.Done()
@@ -99,7 +100,7 @@ func GetUserSession(
 }
 
 func CheckSession(
-	userContext UserContext,
+	userContext *UserContext,
 ) bool {
 	if !userContext.okUserSession {
 		log.Printf("Error in session lookup by partition_period: %d, session_id: %s\n", userContext.sessionPartitionPeriod, userContext.sessionId)
@@ -149,6 +150,7 @@ func SetupAuthQueries(
 		"last_action_es",
 		"keep_signed_in",
 	).Where(
+		qb.Eq("partition_period"),
 		qb.Eq("session_id"),
 	).BypassCache().ToCql()
 	selectUserSession = gocqlx.Query(session.Query(stmt), names)

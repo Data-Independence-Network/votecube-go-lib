@@ -34,15 +34,18 @@ func GetCurrentAndPreviousParitionPeriods(
 }
 
 func getOffsetPartitionPeriodsFromTime(
-	partitionPeriod int,
+	partitionPeriodLength int,
 	minuteOffset int,
 	aTime time.Time,
 ) (int32, int32) {
+	//log.Printf("aTime: %s\n", aTime.Format("2006-01-02 15:04:05"))
+	//log.Printf("minuteOffset: %d\n", minuteOffset)
 	currentPeriod := GetDateMinute(aTime.Add(-(time.Minute * time.Duration(minuteOffset))))
-	numMinutes := partitionPeriod + minuteOffset
-	nextPeriod := GetDateMinute(aTime.Add(-(time.Minute * time.Duration(numMinutes))))
+	numMinutes := partitionPeriodLength + minuteOffset
+	//log.Printf("numMinutes: %d\n", numMinutes)
+	previousPeriod := GetDateMinute(aTime.Add(-(time.Minute * time.Duration(numMinutes))))
 
-	return currentPeriod, nextPeriod
+	return currentPeriod, previousPeriod
 }
 
 func GetDateMinute(
@@ -53,6 +56,7 @@ func GetDateMinute(
 	monthDate := date.Day() << 11
 	hour := date.Hour() << 6
 	minute := date.Minute()
+	//log.Printf("minute: %d\n", minute)
 
 	return int32(year + month + monthDate + hour + minute)
 }

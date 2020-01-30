@@ -52,6 +52,7 @@ type Poll struct {
 type RootOpinion struct {
 	OpinionId int64
 	PollId    int64
+	CreateEs  int64
 	Version   int32
 	Data      []byte
 }
