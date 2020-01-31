@@ -57,14 +57,15 @@ func Zip(
 	gz.Reset(&buf)
 
 	defer gzippers.Put(gz)
-	defer gz.Close()
 
 	if _, err := gz.Write(dataBytes); err != nil {
 		log.Print("Unable to gzip %s", ctx.UserValue("recordType"))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
+		gz.Close()
 		return buf, false
 	}
+	gz.Close()
 
 	return buf, true
 }
