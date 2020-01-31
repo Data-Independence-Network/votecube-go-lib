@@ -23,14 +23,14 @@ type UserContext struct {
 	sessionId              string
 	userSessionRows        []scylladb.UserSession
 	UserId                 int64
-	waitGroup              sync.WaitGroup
+	waitGroup              *sync.WaitGroup
 	parallel               bool
 }
 
 func NewParallelUserContext(
 	ctx *fasthttp.RequestCtx,
 	userId int64,
-	waitGroup sync.WaitGroup,
+	waitGroup *sync.WaitGroup,
 ) *UserContext {
 	sessionPartitionPeriod, ok := ParseInt32Param(
 		"sessionPartitionPeriod", ctx)

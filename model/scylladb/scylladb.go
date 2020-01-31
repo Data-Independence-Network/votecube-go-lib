@@ -1,5 +1,9 @@
 package scylladb
 
+type Row interface {
+	TableName() string
+}
+
 type Opinion struct {
 	PartitionPeriod int32
 	RootOpinionId   int64
@@ -16,6 +20,10 @@ type Opinion struct {
 	InsertProcessed bool
 }
 
+func (r Opinion) TableName() string {
+	return "opinions"
+}
+
 type OpinionUpdate struct {
 	PartitionPeriod int32
 	RootOpinionId   int64
@@ -24,16 +32,28 @@ type OpinionUpdate struct {
 	UpdateProcessed bool
 }
 
+func (r OpinionUpdate) TableName() string {
+	return "opinion_updates"
+}
+
 type PeriodAddedToRootOpinionIds struct {
 	PartitionPeriod  int64
 	RootOpinionId    int64
 	RootOpinionIdMod int32
 }
 
+func (r PeriodAddedToRootOpinionIds) TableName() string {
+	return "period_added_to_root_opinion_ids"
+}
+
 type PeriodUpdatedRootOpinionIds struct {
 	PartitionPeriod  int64
 	RootOpinionId    int64
 	RootOpinionIdMod int32
+}
+
+func (r PeriodUpdatedRootOpinionIds) TableName() string {
+	return "period_updated_root_opinion_ids"
 }
 
 type Poll struct {
@@ -49,12 +69,20 @@ type Poll struct {
 	InsertProcessed bool
 }
 
+func (r Poll) TableName() string {
+	return "polls"
+}
+
 type RootOpinion struct {
 	OpinionId int64
 	PollId    int64
 	CreateEs  int64
 	Version   int32
 	Data      []byte
+}
+
+func (r RootOpinion) TableName() string {
+	return "root_opinions"
 }
 
 type UserSession struct {
@@ -64,4 +92,8 @@ type UserSession struct {
 	KeepSignedIn    int8
 	UserId          int64
 	Data            []byte
+}
+
+func (r UserSession) TableName() string {
+	return "user_sessions"
 }

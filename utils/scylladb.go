@@ -5,14 +5,15 @@ import (
 	"github.com/valyala/fasthttp"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 func Insert(
 	preparedInsert *gocqlx.Queryx,
-	v interface{},
+	r interface{},
 	ctx *fasthttp.RequestCtx,
 ) bool {
-	return exec("INSERT", preparedInsert, v, ctx)
+	return exec("INSERT", preparedInsert, r, ctx)
 }
 
 func Select(
@@ -21,7 +22,7 @@ func Select(
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	if err := preparedSelect.Select(dest); err != nil {
-		log.Printf("Error during SELECT of %s\n", ctx.UserValue("recordType"))
+		log.Printf("Error during SELECT of \"%s\"\n", reflect.TypeOf(dest))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
@@ -47,18 +48,18 @@ func SelectCount(
 
 func Update(
 	preparedInsert *gocqlx.Queryx,
-	v interface{},
+	r interface{},
 	ctx *fasthttp.RequestCtx,
 ) bool {
-	return exec("UPDATE", preparedInsert, v, ctx)
+	return exec("UPDATE", preparedInsert, r, ctx)
 }
 
 func ExecAux(
 	preparedModification *gocqlx.Queryx,
-	v interface{},
+	r interface{},
 	errorMessage string,
 ) bool {
-	statement := preparedModification.BindStruct(v)
+	statement := preparedModification.BindStruct(r)
 
 	if err := statement.Exec(); err != nil {
 		log.Println(errorMessage)
@@ -72,13 +73,13 @@ func ExecAux(
 func exec(
 	operationType string,
 	preparedInsert *gocqlx.Queryx,
-	v interface{},
+	r interface{},
 	ctx *fasthttp.RequestCtx,
 ) bool {
-	statement := preparedInsert.BindStruct(v)
+	statement := preparedInsert.BindStruct(r)
 
 	if err := statement.Exec(); err != nil {
-		log.Printf("Error during %s of %s\n", operationType, ctx.UserValue("recordType"))
+		log.Printf("Error during %s of \"%s\"\n", operationType, reflect.TypeOf(r))
 		log.Print(err)
 		ctx.Error("Internal Server Error", http.StatusInternalServerError)
 		return false
