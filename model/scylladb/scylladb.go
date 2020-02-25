@@ -8,14 +8,14 @@ type Opinion struct {
 	PartitionPeriod int32
 	RootOpinionId   int64
 	OpinionId       int64
-	AgeSuitability  int64
-	PollId          int64
-	ThemeId         int64
-	LocationId      int32
-	Version         int16
-	ParentOpinionId int64
-	CreateEs        int64
-	UserId          int64
+	//AgeSuitability  int64
+	//PollId          int64
+	//ThemeId         int64
+	//LocationId      int32
+	Version int16
+	//ParentOpinionId int64
+	//CreateDbt        int64
+	//UserId          int64
 	Data            []byte
 	InsertProcessed bool
 }
@@ -58,13 +58,13 @@ func (r PeriodUpdatedRootOpinionIds) TableName() string {
 
 type Poll struct {
 	PollId          int64
-	ThemeId         int64
-	LocationId      int32
 	PollIdMod       int32
-	CreateEs        int64
-	UserId          int64
 	PartitionPeriod int32
-	AgeSuitability  int64
+	//ThemeId         int64
+	//LocationId      int32
+	//CreateDtb        int64
+	//UserId          int64
+	//AgeSuitability  int64
 	Data            []byte
 	InsertProcessed bool
 }

@@ -1,7 +1,5 @@
 package vespa
 
-import "bitbucket.org/votecube/votecube-go-lib/model/data"
-
 type Error struct {
 	Description string `json:"description"`
 	Id          int    `json:"id"`
@@ -14,7 +12,7 @@ type ModResponse struct {
 }
 
 type OpinionAdd struct {
-	Fields data.Opinion `json:"fields"`
+	Fields Opinion `json:"fields"`
 }
 
 type StringFieldUpdate struct {
@@ -30,5 +28,28 @@ type OpinionUpdate struct {
 }
 
 type PollAdd struct {
-	Fields data.Poll `json:"fields"`
+	Fields Poll `json:"fields"`
+}
+
+type Opinion struct {
+	AgeSuitability int64 `json:"ageSuitability"`
+	// Create datetime decimal bitmap
+	CreateDtb     int64  `json:createDtb`
+	LocationId    int32  `json:"locationId"`
+	PollId        int64  `json:"pollId"`
+	RootOpinionId int64  `json:rootOpinionId,omitempty`
+	Text          string `json:"text"`
+	ThemeId       int64  `json:"themeId"`
+	UserId        int64  `json:"userId"`
+}
+
+type Poll struct {
+	AgeSuitability int64  `json:"ageSuitability"`
+	Contents       string `json:"contents"` // `json:"contents,omitempty"`
+	// Create datetime decimal bitmap
+	CreateDtb  int64  `json:"createDtb"`
+	LocationId int32  `json:"locationId"`
+	ThemeId    int64  `json:"themeId"`
+	Title      string `json:"title"`
+	UserId     int64  `json:"userId"`
 }

@@ -109,6 +109,24 @@ func updateJson(
 	return bodyBytes, true
 }
 
+func GetObject(
+	url string,
+	out interface{},
+	ctx *fasthttp.RequestCtx,
+) bool {
+	response, ok := Get(url, ctx)
+
+	if !ok {
+		return false
+	}
+
+	if !Unmarshal(response, out, ctx) {
+		return false
+	}
+
+	return true
+}
+
 func Get(
 	url string,
 	ctx *fasthttp.RequestCtx,

@@ -12,15 +12,26 @@ import (
 
 func AddOpinion(
 	urlPrefix string,
-	opinion data.Opinion,
+	dataOpinion data.Opinion,
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	modResponse := vespa.ModResponse{}
+
 	opinionAdd := vespa.OpinionAdd{
-		Fields: opinion,
+		Fields: vespa.Opinion{
+			AgeSuitability: dataOpinion.AgeSuitability,
+			CreateDtb:      dataOpinion.CreateDtb,
+			LocationId:     dataOpinion.LocationId,
+			PollId:         dataOpinion.PollId,
+			RootOpinionId:  dataOpinion.RootOpinionId,
+			Text:           dataOpinion.Text,
+			ThemeId:        dataOpinion.ThemeId,
+			UserId:         dataOpinion.UserId,
+		},
 	}
+
 	if !utils.PostObject(
-		urlPrefix+"/document/v1/opinion/opinion/docid/"+strconv.FormatInt(opinion.Id, 10),
+		urlPrefix+"/document/v1/opinion/opinion/docid/"+strconv.FormatInt(dataOpinion.Id, 10),
 		opinionAdd,
 		modResponse,
 		ctx,
@@ -33,15 +44,23 @@ func AddOpinion(
 
 func AddPoll(
 	urlPrefix string,
-	poll data.Poll,
+	dataPoll data.Poll,
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	modResponse := vespa.ModResponse{}
 	pollAdd := vespa.PollAdd{
-		Fields: poll,
+		Fields: vespa.Poll{
+			AgeSuitability: dataPoll.AgeSuitability,
+			Contents:       dataPoll.Contents,
+			CreateDtb:      dataPoll.CreateDtb,
+			LocationId:     dataPoll.LocationId,
+			ThemeId:        dataPoll.ThemeId,
+			Title:          dataPoll.Title,
+			UserId:         dataPoll.UserId,
+		},
 	}
 	if !utils.PostObject(
-		urlPrefix+"/document/v1/poll/poll/docid/"+strconv.FormatInt(poll.Id, 10),
+		urlPrefix+"/document/v1/poll/poll/docid/"+strconv.FormatInt(dataPoll.Id, 10),
 		pollAdd,
 		modResponse,
 		ctx,
@@ -54,19 +73,19 @@ func AddPoll(
 
 func UpdateOpinion(
 	urlPrefix string,
-	opinion data.Opinion,
+	dataOpinion data.Opinion,
 	ctx *fasthttp.RequestCtx,
 ) bool {
 	opinionUpdate := vespa.OpinionUpdate{
 		Fields: vespa.OpinionUpdateFields{
 			Text: vespa.StringFieldUpdate{
-				Assign: opinion.Text,
+				Assign: dataOpinion.Text,
 			},
 		},
 	}
 	modResponse := vespa.ModResponse{}
 	if !utils.PutObject(
-		urlPrefix+"/document/v1/opinion/opinion/docid/"+strconv.FormatInt(opinion.Id, 10),
+		urlPrefix+"/document/v1/opinion/opinion/docid/"+strconv.FormatInt(dataOpinion.Id, 10),
 		opinionUpdate,
 		modResponse,
 		ctx,

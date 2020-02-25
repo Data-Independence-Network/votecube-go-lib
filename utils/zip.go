@@ -2,11 +2,13 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/klauspost/compress/gzip"
 	"github.com/valyala/fasthttp"
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"sync"
 )
 
@@ -138,6 +140,33 @@ func UnzipToZipper(
 func Unzip(
 	compressedData []byte,
 	errorMessage string,
+	ctx *fasthttp.RequestCtx,
+) ([]byte, bool) {
+	if compressedData == nil {
+		return nil, true
+	}
+
+	compressedDataReader := bytes.NewReader(compressedData)
+	gunz := gunzippers.Get().(*gzip.Reader)
+	gunz.Reset(compressedDataReader)
+
+	defer gunzippers.Put(gunz)
+	defer gunz.Close()
+
+	var buf bytes.Buffer
+	if _, error := buf.ReadFrom(gunz); error != nil {
+		log.Println(errorMessage)
+		log.Print(error)
+		ctx.Error("Internal Server Error", http.StatusInternalServerError)
+		return nil, false
+	}
+
+	return buf.Bytes(), true
+}
+
+func UnzipAux(
+	compressedData []byte,
+	errorMessage string,
 ) ([]byte, bool) {
 	if compressedData == nil {
 		return nil, true
@@ -158,6 +187,24 @@ func Unzip(
 	}
 
 	return buf.Bytes(), true
+}
+
+func UnzipUnmarshal(
+	data []byte,
+	object interface{},
+	ctx *fasthttp.RequestCtx,
+) bool {
+	bytes, ok := Unzip(data, fmt.Sprintf("Error unzipping %s", reflect.TypeOf(object)), ctx)
+
+	if !ok {
+		return false
+	}
+
+	if !Unmarshal(bytes, object, ctx) {
+		return false
+	}
+
+	return true
 }
 
 func CloseZipper(

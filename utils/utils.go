@@ -20,6 +20,10 @@ func GetCurrentEs() int64 {
 	return time.Now().UTC().Unix()
 }
 
+func GetCurrentDtb() int64 {
+	return GetDecimalDateSecond(time.Now().UTC())
+}
+
 func GetDateMinuteFromEpochSeconds(
 	epochSeconds int64,
 ) int32 {
@@ -59,4 +63,18 @@ func GetDateMinute(
 	//log.Printf("minute: %d\n", minute)
 
 	return int32(year + month + monthDate + hour + minute)
+}
+
+func GetDecimalDateSecond(
+	date time.Time,
+) int64 {
+	year := (date.Year() - 2020) * 10000000000
+	month := int(date.Month()) * 100000000
+	monthDate := date.Day() * 1000000
+	hour := date.Hour() * 10000
+	minute := date.Minute() * 100
+	second := date.Second()
+	//log.Printf("minute: %d\n", minute)
+
+	return int64(year + month + monthDate + hour + minute + second)
 }
